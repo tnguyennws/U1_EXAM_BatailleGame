@@ -46,8 +46,8 @@ class Deck
 
     public function printDeck()
     {
-      foreach($this->deck as $card) {
-        $this->printCard($card);
+      foreach($this->deck as $carte) {
+        $this->printCard($carte);
       }
 	  return $this;
     }
@@ -56,23 +56,23 @@ class Deck
     Affiche une carte
     */
 
-    public function printCard($card)
+    public function printCard($carte)
     {
       $coul = '';
-      if ($card['coul'] == 'Pique') {
+      if ($carte['coul'] == 'Pique') {
         $coul = ' de Pique ';
       }
-      if ($card['coul'] == 'Carreau') {
+      if ($carte['coul'] == 'Carreau') {
         $coul = ' de Carreau ';
       }
-      if ($card['coul'] == 'Trefle') {
+      if ($carte['coul'] == 'Trefle') {
         $coul = ' de Trefle ';
       }
-      if ($card['coul'] == 'Coeur') {
+      if ($carte['coul'] == 'Coeur') {
         $coul = ' de Coeur ';
       }
       
-      $rank = $card['index'];
+      $rank = $carte['index'];
       switch ($rank) {
         case 11:
           $rank = 'Valet';
@@ -105,10 +105,10 @@ class Deck
 	Retourne la carte du dessus et la retire du paquet
     */
     
-	public function getTopCard()
+	public function getCarteDessus()
 	{
-	  $card = array_pop($this->deck);
-	  return $card;
+	  $carte = array_pop($this->deck);
+	  return $carte;
     }
     
     /*
@@ -129,9 +129,9 @@ class Deck
 		$nbcartes = $this->sizeofDeck();
 
 		for($i = 0; $i < $nbcartes;) {
-			$hand1->deck[] = $this->getTopCard();
+			$hand1->deck[] = $this->getCarteDessus();
 			$i++;
-			$hand2->deck[] = $this->getTopCard();
+			$hand2->deck[] = $this->getCarteDessus();
 			$i++;
 		}
 		return;
@@ -141,11 +141,11 @@ class Deck
     Ajoute des cartes en-dessous du deck et retourne le nombre de cartes ajoutées
     */
 
-    public function addToBottom($morecards)
+    public function ajoutEnDessous($morecartes)
     {
-        $nbcartes = $morecards->sizeofDeck();
+        $nbcartes = $morecartes->sizeofDeck();
         for($i = 0; $i < $nbcartes; $i++) {
-                $this->addCardToBottom($morecards->getTopCard());
+                $this->ajoutCarteEnDessous($morecartes->getCarteDessus());
             }
         return $nbcartes;
     }
@@ -154,9 +154,9 @@ class Deck
     Ajoute la carte en argument en-dessous du deck
     */
 
-    public function addCardToBottom ($card)
+    public function ajoutCarteEnDessous ($carte)
     {
-        array_unshift($this->deck, $card);
+        array_unshift($this->deck, $carte);
         
         return;
     }
@@ -165,25 +165,25 @@ class Deck
     Ajoute la carte en argument au-dessus du deck
     */
 
-    public function addCardToTop ($card)
+    public function ajoutCarteAuDessus ($carte)
     {
-        $this->deck[] = $card;
+        $this->deck[] = $carte;
         
         return;
     }
 
 } //fin de la classe Deck
 
-class Hand extends Deck
+class Main extends Deck
 {
     public function __construct()
     {
         return $this;
     }
   
-} //fin de la classe Hand
+} //fin de la classe Main
 
-function battle($joueur1, $joueur2, $battlepile)
+function tour($joueur1, $joueur2, $pile)
 {
     //Vérifie si les joueurs ont les cartes pour jouer
     if ($joueur1->sizeofDeck() == 0) {
@@ -196,35 +196,35 @@ function battle($joueur1, $joueur2, $battlepile)
     }
     
     //Joue la carte du haut sur la pile
-    $carte1 = $joueur1->getTopCard();
-    $battlepile->addCardToTop($carte1);
+    $carte1 = $joueur1->getCarteDessus();
+    $pile->ajoutCarteAuDessus($carte1);
     echo 'Joueur 1 joue ';  $joueur1->printCard($carte1);
 
-    $carte2 = $joueur2->getTopCard();
-    $battlepile->addCardToTop($carte2);
+    $carte2 = $joueur2->getCarteDessus();
+    $pile->ajoutCarteAuDessus($carte2);
     echo 'Joueur 2 joue ';  $joueur2->printCard($carte2);
     
     //Mélange la pile pour la redistribution
-    $battlepile->shuffleDeck(); 
+    $pile->shuffleDeck(); 
     
     //Compare les cartes et annonce le gagnant
     //Ajoute les cartes de la pile en-dessous du deck du gagnant
     //Si les cartes ont la même valeur, on repart pour un tour 
     if ($carte1['index'] > $carte2['index']) {
         echo "Joueur 1 gagne cette bataille \n";
-        $joueur1->addToBottom($battlepile);
+        $joueur1->ajoutEnDessous($pile);
     } elseif ($carte2['index'] > $carte1['index']) {
         echo "Joueur 2 gagne cette bataille \n";
-        $joueur2->addToBottom($battlepile);
+        $joueur2->ajoutEnDessous($pile);
     } else {
         echo "Egalité, on recommence \n";
-        war ($joueur1, $joueur2, $battlepile);
+        bataille ($joueur1, $joueur2, $pile);
     }
   
   return;
 }
 
-function war ($joueur1, $joueur2, $battlepile)
+function bataille ($joueur1, $joueur2, $pile)
 {
     //Vérifie s'il reste des cartes aux 2 joueurs
     if ($joueur1->sizeofDeck() == 0) {
@@ -237,10 +237,10 @@ function war ($joueur1, $joueur2, $battlepile)
     }
     
     //Chaque joueur met la carte du dessus de son paquet
-    $battlepile->addCardToTop($joueur1->getTopCard());
-    $battlepile->addCardToTop($joueur2->getTopCard());
+    $pile->ajoutCarteAuDessus($joueur1->getCarteDessus());
+    $pile->ajoutCarteAuDessus($joueur2->getCarteDessus());
     //Le tour reprend normalement
-    battle($joueur1, $joueur2, $battlepile);
+    tour($joueur1, $joueur2, $pile);
     
     return;
 }
@@ -250,7 +250,7 @@ do{
     echo "1 - Jouer (mode auto)\n";
     echo "2 - Jouer (mode manuel)\n";
     echo "3 - Règles \n";
-    echo "3 - Quitter \n";
+    echo "4 - Quitter \n";
 
     $choix = readline();
 
@@ -285,13 +285,13 @@ function jeuManu(){
 
     //Distribue 2 mains
     echo "Distribution des mains ... \n";
-    $joueur1 = new Hand();  //Création d'une main
-    $joueur2 = new Hand();  //Création d'une main
+    $joueur1 = new Main();  //Création d'une main
+    $joueur2 = new Main();  //Création d'une main
     $startingdeck->deal($joueur1, $joueur2);
 
 
     //Création d'une main pour les cartes jouées (pile de jeu)
-    $battlepile = new Hand();
+    $pile = new Main();
 
 
     //Bataille tant que les joueurs ont une main
@@ -301,7 +301,7 @@ function jeuManu(){
         $input = readline();
         
         if($input == "O"){
-            battle ($joueur1, $joueur2, $battlepile);
+            tour ($joueur1, $joueur2, $pile);
             echo 'Joueur 1 a ' . $joueur1->sizeofDeck() . " cartes \n";
             echo 'Joueur 2 a ' . $joueur2->sizeofDeck() . " cartes \n";
         }else{
@@ -324,18 +324,18 @@ function jeuAuto(){
 
     //Distribue 2 mains
     echo "Distribution des mains ... \n";
-    $joueur1 = new Hand();  //Création d'une main
-    $joueur2 = new Hand();  //Création d'une main
+    $joueur1 = new Main();  //Création d'une main
+    $joueur2 = new Main();  //Création d'une main
     $startingdeck->deal($joueur1, $joueur2);
 
 
     //Création d'une main pour les cartes jouées (pile de jeu)
-    $battlepile = new Hand();
+    $pile = new Main();
 
 
     //Bataille jusqu'à ce que les joueurs n'aient plus de mains
     while (($joueur1->sizeofDeck() > 0) && ($joueur2->sizeofDeck() > 0)) {
-        battle ($joueur1, $joueur2, $battlepile);
+        tour ($joueur1, $joueur2, $pile);
         echo 'Joueur 1 a ' . $joueur1->sizeofDeck() . " cartes \n";
         echo 'Joueur 2 a ' . $joueur2->sizeofDeck() . " cartes \n";
     }
